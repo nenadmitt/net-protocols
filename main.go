@@ -1,29 +1,28 @@
 package main
 
 import (
-	"syscall"
+	"fmt"
+	"github.com/nenadmitt/tcp"
+	"io"
+	"runtime"
 )
 
 func main() {
 
-	// Creating a socket file descriptor
-	// file handle (windows) or file description (UNIX) - a temporary number assigned to a file by operating system
-	// AF_NET - address family, the socket will be using ipv4
-	// SOCK_STREAM - connection gets established between two parties until terminated
-	fileHandle, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_STREAM, 0)
+	fmt.Println(runtime.GOOS)
+	s,err := tcp.NewSocket(3004)
+	defer s.Close()
 	if err != nil {
-		panic(err.Error())
+		panic(err)
 	}
 
-	socketAddress := &syscall.SockaddrInet4{
-		Port: 3001,
-		Addr: [4]byte{127,0,0,1},
+	for {
+		c,err := s.AcceptConnection()
+		if err != nil {
+			panic(err.Error())
+		}
+		fmt.Println("READING CONECCTION")
+		bytes,err := io.ReadAll(c)
+		fmt.Println(string(bytes))
 	}
-
-	// Binding a socket to a port
-	if err := syscall.Bind(fileHandle, socketAddress);err != nil {
-
-	}
-
-
 }
